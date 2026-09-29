@@ -20,7 +20,7 @@ from requests import RequestException, get
 # 1. Environment Setup
 # ------------------------------------------------------------------
 load_dotenv()
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://0ae6-2401-4900-8839-7816-fa48-2f0b-49a9-4e9d.ngrok-free.app")
 
 # ------------------------------------------------------------------
 # 2. LLM Configuration
