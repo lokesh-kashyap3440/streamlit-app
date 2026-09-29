@@ -21,7 +21,7 @@ from requests import RequestException, get
 # ------------------------------------------------------------------
 load_dotenv()
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://0ae6-2401-4900-8839-7816-fa48-2f0b-49a9-4e9d.ngrok-free.app")
-
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3.5-4b")
 # ------------------------------------------------------------------
 # 2. LLM Configuration
 # ------------------------------------------------------------------
