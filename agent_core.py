@@ -30,18 +30,23 @@ LLM_MODEL = os.getenv("LLM_MODEL", "nvidia-nemotron-3-nano-4b")
 # 2. LLM Configuration
 # ------------------------------------------------------------------
 if LLM_PROVIDER == "lmstudio":
-    # LM Studio uses an OpenAI-compatible API
+    # LM Studio uses an OpenAI-compatible API.
+    # IMPORTANT: The base_url must end with /v1 for ChatOpenAI to target /chat/completions correctly.
+    adjusted_base_url = LLM_BASE_URL
+    if not adjusted_base_url.endswith("/v1"):
+        adjusted_base_url = adjusted_base_url.rstrip("/") + "/v1"
+        
     llm = ChatOpenAI(
         model=LLM_MODEL,
         temperature=0.1,
-        base_url=LLM_BASE_URL,
+        base_url=adjusted_base_url,
         api_key="lm-studio" # type: ignore
     )
 else:
     # Default to Ollama
     llm = ChatOllama(
-        model=LLM_MODEL,
-        temperature=0.1,
+        model=LLM_MODEL, 
+        temperature=0.1, 
         base_url=LLM_BASE_URL
     )
 
