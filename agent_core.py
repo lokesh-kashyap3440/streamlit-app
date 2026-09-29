@@ -24,7 +24,7 @@ load_dotenv()
 # Provider can be 'ollama' or 'lmstudio'
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama").lower()
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://33b7-2401-4900-8839-7816-fa48-2f0b-49a9-4e9d.ngrok-free.app")
-LLM_MODEL = os.getenv("LLM_MODEL", "qwen3.5-4b")
+LLM_MODEL = os.getenv("LLM_MODEL", "nvidia-nemotron-3-nano-4b")
 
 # ------------------------------------------------------------------
 # 2. LLM Configuration
