@@ -106,7 +106,8 @@ SYSTEM_PROMPT = (
 )
 
 # create_react_agent manages the loop: LLM -> Tool Call -> Tool Execution -> LLM.
-react_graph = create_react_agent(llm, tools=tools, state_modifier=SYSTEM_PROMPT)
+# Note: In newer versions of langgraph, 'state_modifier' has been replaced by 'modifier'.
+react_graph = create_react_agent(llm, tools=tools, modifier=SYSTEM_PROMPT)
 
 
 def run_prompt(prompt: str) -> str:
