@@ -25,7 +25,7 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3.5-4b")
 # ------------------------------------------------------------------
 # 2. LLM Configuration
 # ------------------------------------------------------------------
-llm = ChatOllama(model="gemma4:31b-cloud", temperature=0.1, base_url=OLLAMA_BASE_URL)
+llm = ChatOllama(model=OLLAMA_MODEL, temperature=0.1, base_url=OLLAMA_BASE_URL)
 
 
 # ------------------------------------------------------------------
