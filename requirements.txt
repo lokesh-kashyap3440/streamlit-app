@@ -1,6 +1,7 @@
 langchain
 langgraph
 langchain-ollama
+langchain-openai
 python-dotenv
 rich
 streamlit

@@ -6,13 +6,13 @@ This module contains the LLM configuration, tools, and the LangGraph agent graph
 
 import os
 import platform
-from collections.abc import Sequence
-from typing import cast
+from typing import Any
 
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
-from langchain_core.tools import BaseTool, tool
+from langchain_core.tools import tool
 from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from requests import RequestException, get
 
@@ -20,13 +20,30 @@ from requests import RequestException, get
 # 1. Environment Setup
 # ------------------------------------------------------------------
 load_dotenv()
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://0ae6-2401-4900-8839-7816-fa48-2f0b-49a9-4e9d.ngrok-free.app")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3.5-4b")
+
+# Provider can be 'ollama' or 'lmstudio'
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama").lower()
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://33b7-2401-4900-8839-7816-fa48-2f0b-49a9-4e9d.ngrok-free.app")
+LLM_MODEL = os.getenv("LLM_MODEL", "qwen3.5-4b")
+
 # ------------------------------------------------------------------
 # 2. LLM Configuration
 # ------------------------------------------------------------------
-llm = ChatOllama(model=OLLAMA_MODEL, temperature=0.1, base_url=OLLAMA_BASE_URL)
-
+if LLM_PROVIDER == "lmstudio":
+    # LM Studio uses an OpenAI-compatible API
+    llm = ChatOpenAI(
+        model=LLM_MODEL,
+        temperature=0.1,
+        base_url=LLM_BASE_URL,
+        api_key="lm-studio" # type: ignore
+    )
+else:
+    # Default to Ollama
+    llm = ChatOllama(
+        model=LLM_MODEL,
+        temperature=0.1,
+        base_url=LLM_BASE_URL
+    )
 
 # ------------------------------------------------------------------
 # 3. Tool Definitions
@@ -37,7 +54,6 @@ def add(a: float, b: float) -> float:
     Performs a simple addition of two numbers.
     """
     return a + b
-
 
 @tool
 def save_to_obsidian(filename: str, content: str) -> str:
@@ -63,14 +79,12 @@ def save_to_obsidian(filename: str, content: str) -> str:
     except OSError as e:
         return f"Failed to save to Obsidian: {e}"
 
-
 @tool
 def check_weather(city: str) -> str:
     """
     Fetches comprehensive real-time weather data for a specified city using wttr.in.
     """
     try:
-        # Adding a User-Agent header to prevent being blocked as a bot
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
@@ -82,8 +96,8 @@ def check_weather(city: str) -> str:
     except Exception as e:
         return f"An unexpected error occurred while fetching weather for {city}: {str(e)}"
 
-
-tools = cast(Sequence[BaseTool], [add, save_to_obsidian, check_weather])
+# Use Any for the list to avoid the @tool return type mismatch in static analysis
+tools: list[Any] = [add, save_to_obsidian, check_weather]
 
 # ------------------------------------------------------------------
 # 4. Agent Graph Configuration
@@ -111,18 +125,12 @@ SYSTEM_PROMPT = (
     "they render correctly in Obsidian."
 )
 
-# create_react_agent manages the loop: LLM -> Tool Call -> Tool Execution -> LLM.
-# We remove the modifier parameter here to avoid version compatibility issues on cloud deployments.
-# The system prompt will be injected directly into the state in run_prompt().
 react_graph = create_react_agent(llm, tools=tools)
-
 
 def run_prompt(prompt: str) -> str:
     """
     Processes a user prompt through the ReAct graph and returns the final response.
     """
-    # We inject the SYSTEM_PROMPT as the first message in the state.
-    # This is a version-agnostic way to provide a system persona to the agent.
     state = {
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
