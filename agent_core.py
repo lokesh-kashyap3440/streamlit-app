@@ -106,14 +106,22 @@ SYSTEM_PROMPT = (
 )
 
 # create_react_agent manages the loop: LLM -> Tool Call -> Tool Execution -> LLM.
-# Note: In newer versions of langgraph, 'state_modifier' has been replaced by 'modifier'.
-react_graph = create_react_agent(llm, tools=tools, modifier=SYSTEM_PROMPT)
+# We remove the modifier parameter here to avoid version compatibility issues on cloud deployments.
+# The system prompt will be injected directly into the state in run_prompt().
+react_graph = create_react_agent(llm, tools=tools)
 
 
 def run_prompt(prompt: str) -> str:
     """
     Processes a user prompt through the ReAct graph and returns the final response.
     """
-    state = {"messages": [HumanMessage(content=prompt)]}
+    # We inject the SYSTEM_PROMPT as the first message in the state.
+    # This is a version-agnostic way to provide a system persona to the agent.
+    state = {
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            HumanMessage(content=prompt)
+        ]
+    }
     result = react_graph.invoke(state)
     return result["messages"][-1].content
