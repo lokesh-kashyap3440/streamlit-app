@@ -70,11 +70,17 @@ def check_weather(city: str) -> str:
     Fetches comprehensive real-time weather data for a specified city using wttr.in.
     """
     try:
-        response = get(f"https://wttr.in/{city}?format=j1", timeout=10)
+        # Adding a User-Agent header to prevent being blocked as a bot
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+        response = get(f"https://wttr.in/{city}?format=j1", headers=headers, timeout=10)
         response.raise_for_status()
         return response.text
-    except RequestException as e:
-        return f"Could not fetch weather for {city}: {e!s}"
+    except (RequestException, ConnectionError) as e:
+        return f"I tried to check the weather for {city}, but the weather service is currently unreachable. Error: {str(e)}"
+    except Exception as e:
+        return f"An unexpected error occurred while fetching weather for {city}: {str(e)}"
 
 
 tools = cast(Sequence[BaseTool], [add, save_to_obsidian, check_weather])
